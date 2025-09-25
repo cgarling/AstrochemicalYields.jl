@@ -1,21 +1,16 @@
-# Code for SN / stellar wind yields
+# Code for Nomoto2006 SN-II yields
 
+const _Nomoto2006_Zs = (0.0, 0.001, 0.004, 0.02)
+const _Nomoto2006_SN_M = (13.0, 15.0, 18.0, 20.0, 25.0, 30.0, 40.0)
 struct Nomoto2006Entry{A, B <: AbstractArray{A}, C, D}
     Z::A
     M::B
     E::B
     Mcut::B
-    # p::B
-    # d::B
     table::C
     isotopes::D
 end
-# function Nomoto2006Entry(args...)
-#     T = promote_type(typeof(args[1]), map(typeof ∘ eltype, args[2:end])...)
-#     return Nomoto2006Entry(convert(T, args[1]), )
-# end
-const _Nomoto2006_Zs = (0.0, 0.001, 0.004, 0.02)
-const _Nomoto2006_SN_M = (13.0, 15.0, 18.0, 20.0, 25.0, 30.0, 40.0)
+
 function Nomoto2006Entry(Z::Number)
     if !any(map(Base.Fix1(isapprox, Z), _Nomoto2006_Zs))
         throw(ArgumentError("Argument `Z` must be approximately equal to one of $(_Nomoto2006_Zs)."))
@@ -38,32 +33,16 @@ function Nomoto2006Entry(Z::Number)
 end
 
 
-struct Nomoto2006SN{N, B, C}
+struct Nomoto2006SN{I, B, C}
     iso_itp::B
     mcut_itp::C
-    isotopes::NTuple{N, Symbol}
+    # isotopes::NTuple{N, Symbol} # This is now part of the type signature (I) for performance
 end
-isotopes(x::Nomoto2006SN) = x.isotopes
-_nt(x::Nomoto2006SN{N}) where N = NamedTuple{isotopes(x), NTuple{N, Float64}}
-function (x::Nomoto2006SN{N})(Z, M) where N
-    return _nt(x)(x.iso_itp(Z, M))
+isotopes(::Nomoto2006SN{I}) where I = I
+_nt(::Nomoto2006SN{I}) where I = NamedTuple{I, NTuple{length(I), Float64}}
+function (x::Nomoto2006SN)(Z, M)
+    return _nt(x)(Tuple(x.iso_itp(Z, M)))
 end
-function (x::Nomoto2006SN{N})(Z::AbstractArray, M::AbstractArray) where N
-    nt = _nt(x)
-    return [nt(x.iso_itp(Z[i], M[i])) for i in eachindex(Z, M)]
-end
-# function Nomoto2006SN()
-#     entries = Nomoto2006Entry.(_Nomoto2006_Zs)
-#     mat = Array{Float64}(undef, length(entries), length(entries[1].M), length(entries[1].isotopes))
-#     for i in axes(mat, 1)
-#         for j in axes(mat, 2)
-#             mat[i,j,:] .= entries[i].table[:,j]
-#         end
-#     end
-#     # return mat
-#     return NDInterpolation(mat, (LinearInterpolationDimension(collect(_Nomoto2006_Zs)),
-#                            LinearInterpolationDimension(entries[1].M)))
-# end
 
 function Nomoto2006SN()
     entries = Nomoto2006Entry.(_Nomoto2006_Zs)
@@ -84,6 +63,7 @@ function Nomoto2006SN(entries, good)
     mcut_mat = [i.Mcut[j] for i=entries, j=eachindex(entries[1].M)]
     mcut_itp = interpolate((SVector(_Nomoto2006_Zs), SVector(_Nomoto2006_SN_M)), mcut_mat, Gridded(Linear()))
     mcut_itp = extrapolate(mcut_itp, Throw())
-    isotopes = Tuple(Symbol.(entries[1].isotopes))
-    return Nomoto2006SN(iso_itp, mcut_itp, isotopes)
+    isotopes = Tuple(Symbol.(entries[1].isotopes[good]))
+    # return Nomoto2006SN(iso_itp, mcut_itp, isotopes)
+    return Nomoto2006SN{isotopes, typeof(iso_itp), typeof(mcut_itp)}(iso_itp, mcut_itp)
 end
