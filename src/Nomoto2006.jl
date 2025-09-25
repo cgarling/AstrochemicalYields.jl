@@ -57,24 +57,31 @@ function (x::Nomoto2006SN)(Z, M)
 end
 remnant_mass(x::Nomoto2006SN, Z, M) = x(Z, M).Mcut
 ejecta_mass(x::Nomoto2006SN, Z, M) = M - remnant_mass(x, Z, M)
-# Filter out non-metal columns
+# Filter to include only metals
 function filter_metals(nt)
     exclude_keys = (:p, :d, Symbol("3He"), Symbol("4He"), :Mcut) # Symbol("6Li"), Symbol("7Li")
     return (; (k => nt[k] for k in keys(nt) if k ∉ exclude_keys)...)
 end
 function ejecta_metal_mass(x::Nomoto2006SN{I}, Z, M) where I
-    if length(I) == 80 # Fast path if no elements were excluded
+    if length(I) == 81 # Fast path if no elements were excluded
         return sum(values(x(Z, M))[5:end-1])
     else
         return sum(values(filter_metals(x(Z, M))))
     end
 end
+# Filter to include only alpha elements
 function filter_alpha(nt)
+    include_keys = (Symbol("16O"), Symbol("17O"), Symbol("18O"), Symbol("20Ne"), Symbol("21Ne"), Symbol("22Ne"), Symbol("24Mg"), Symbol("25Mg"), Symbol("26Mg"), Symbol("28Si"), Symbol("29Si"), Symbol("30Si"), Symbol("32S"), Symbol("33S"), Symbol("34S"), Symbol("36S"), Symbol("36Ar"), Symbol("38Ar"), Symbol("40Ar"), Symbol("40Ca"), Symbol("42Ca"), Symbol("43Ca"), Symbol("44Ca"), Symbol("46Ca"), Symbol("48Ca"), Symbol("46Ti"), Symbol("47Ti"), Symbol("48Ti"), Symbol("49Ti"), Symbol("50Ti"))
+    # This line will get the indices for the fast path
+    # return [i for i in eachindex(values(nt)) if keys(nt)[i] ∈ include_keys]
+    if length(nt) == 81 # Fast path if no elements were excluded
+        return NamedTuple{include_keys, NTuple{length(include_keys), Float64}}(values(nt)[[14, 15, 16, 18, 19, 20, 22, 23, 24, 27, 28, 29, 31, 32, 33, 34, 37, 38, 39, 43, 44, 45, 46, 47, 48, 50, 51, 52, 53, 54]])
     # ks = keys(nt)
-    # good = [any(map(x -> occursin(x, k), α_elements)) for k in string.(ks)]
+    # good = [any(map(x -> occursin(x, k), α_elements)) for k in string.(ks)] # Also grabs Sc, which we don't want
     # return (; (k => nt[k] for k in ks if k ∈ ks[good])...)
-    include_keys = (Symbol("16O"), Symbol("17O"), Symbol("18O"), Symbol("20Ne"), Symbol("21Ne"), Symbol("22Ne"), Symbol("24Mg"), Symbol("25Mg"), Symbol("26Mg"), Symbol("28Si"), Symbol("29Si"), Symbol("30Si"), Symbol("32S"), Symbol("33S"), Symbol("34S"), Symbol("36S"), Symbol("36Ar"), Symbol("38Ar"), Symbol("40Ar"), Symbol("40Ca"), Symbol("42Ca"), Symbol("43Ca"), Symbol("44Ca"), Symbol("46Ca"), Symbol("48Ca"), Symbol("46Ti"), Symbol("47Ti"), Symbol("48Ti"), Symbol("48Ti"), Symbol("49Ti"), Symbol("50Ti"))
-    return NamedTuple(k => nt[k] for k in keys(nt) if k ∈ include_keys)
+    else
+        return NamedTuple(k => nt[k] for k in keys(nt) if k ∈ include_keys)
+    end
 end
 ejecta_alpha_mass(x::Nomoto2006SN, Z, M) = sum(values(filter_alpha(x(Z, M))))
 
