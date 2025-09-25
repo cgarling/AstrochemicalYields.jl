@@ -1,5 +1,7 @@
 # Code for Nomoto2006 SN-II yields
 # The mass cut is the mass coordinate (usually in solar masses) that separates the ejecta from the remnant
+# This code allows you to select out a subset of isotopes when constructing Nomoto2006SN;
+# planning to do away with this in the future
 
 module Nomoto2006
 
