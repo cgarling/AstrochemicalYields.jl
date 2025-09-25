@@ -1,7 +1,20 @@
 # Code for Nomoto2006 SN-II yields
+# The mass cut is the mass coordinate (usually in solar masses) that separates the ejecta from the remnant
+
+module Nomoto2006
+
+using ..AstrochemicalYields: AbstractYield, α_elements
+import ..AstrochemicalYields: isotopes, remnant_mass, ejecta_mass, ejecta_metal_mass, ejecta_alpha_mass
+using Interpolations: interpolate, Linear, Gridded, extrapolate, Flat, Throw
+# using DataInterpolationsND: NDInterpolation, LinearInterpolationDimension, BSplineInterpolationDimension
+using Printf: @sprintf
+using StaticArrays: SVector
+
+export Nomoto2006SN
 
 const _Nomoto2006_Zs = (0.0, 0.001, 0.004, 0.02)
 const _Nomoto2006_SN_M = (13.0, 15.0, 18.0, 20.0, 25.0, 30.0, 40.0)
+
 struct Nomoto2006Entry{A, B <: AbstractArray{A}, C, D}
     Z::A
     M::B
@@ -32,17 +45,49 @@ function Nomoto2006Entry(Z::Number)
     return Nomoto2006Entry(Z, M, E, table, isotopes)
 end
 
-
-struct Nomoto2006SN{I, B}
+struct Nomoto2006SN{I, B} <: AbstractYield
     itp::B
     # isotopes::NTuple{N, Symbol} # This is now part of the type signature (I) for performance
 end
+# Base.show(io::IO, ::Nomoto2006SN) = print(io, "Grid of core-collapse SN yields from Nomoto+2006.")
 isotopes(::Nomoto2006SN{I}) where I = I
 _nt(::Nomoto2006SN{I}) where I = NamedTuple{I, NTuple{length(I), Float64}}
 function (x::Nomoto2006SN)(Z, M)
     return _nt(x)(Tuple(x.itp(Z, M)))
 end
+remnant_mass(x::Nomoto2006SN, Z, M) = x(Z, M).Mcut
+ejecta_mass(x::Nomoto2006SN, Z, M) = M - remnant_mass(x, Z, M)
+# Filter out non-metal columns
+function filter_metals(nt)
+    exclude_keys = (:p, :d, Symbol("3He"), Symbol("4He"), :Mcut) # Symbol("6Li"), Symbol("7Li")
+    return (; (k => nt[k] for k in keys(nt) if k ∉ exclude_keys)...)
+end
+function ejecta_metal_mass(x::Nomoto2006SN{I}, Z, M) where I
+    if length(I) == 80 # Fast path if no elements were excluded
+        return sum(values(x(Z, M))[5:end-1])
+    else
+        return sum(values(filter_metals(x(Z, M))))
+    end
+end
+function filter_alpha(nt)
+    # ks = keys(nt)
+    # good = [any(map(x -> occursin(x, k), α_elements)) for k in string.(ks)]
+    # return (; (k => nt[k] for k in ks if k ∈ ks[good])...)
+    include_keys = (Symbol("16O"), Symbol("17O"), Symbol("18O"), Symbol("20Ne"), Symbol("21Ne"), Symbol("22Ne"), Symbol("24Mg"), Symbol("25Mg"), Symbol("26Mg"), Symbol("28Si"), Symbol("29Si"), Symbol("30Si"), Symbol("32S"), Symbol("33S"), Symbol("34S"), Symbol("36S"), Symbol("36Ar"), Symbol("38Ar"), Symbol("40Ar"), Symbol("40Ca"), Symbol("42Ca"), Symbol("43Ca"), Symbol("44Ca"), Symbol("46Ca"), Symbol("48Ca"), Symbol("46Ti"), Symbol("47Ti"), Symbol("48Ti"), Symbol("48Ti"), Symbol("49Ti"), Symbol("50Ti"))
+    return NamedTuple(k => nt[k] for k in keys(nt) if k ∈ include_keys)
+end
+ejecta_alpha_mass(x::Nomoto2006SN, Z, M) = sum(values(filter_alpha(x(Z, M))))
 
+"""
+    Nomoto2006SN()
+Load the Nomoto+2006 core-collapse supernova yield table. The yield table can be interpolated by calling it with the metal mass fraction `Z` and stellar mass `M` (in solar masses) of the progenitor.
+
+```jldoctest
+julia> n = Nomoto2006SN();
+
+julia> n(0.002, 13.5) isa NamedTuple
+true
+"""
 function Nomoto2006SN()
     entries = Nomoto2006Entry.(_Nomoto2006_Zs)
     return Nomoto2006SN(entries, eachindex(entries[1].isotopes))
@@ -62,3 +107,5 @@ function Nomoto2006SN(entries, good)
     isotopes = Tuple(Symbol.(entries[1].isotopes[good]))
     return Nomoto2006SN{isotopes, typeof(iso_itp)}(iso_itp)
 end
+
+end # module
