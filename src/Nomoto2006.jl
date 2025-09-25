@@ -38,18 +38,20 @@ function Nomoto2006Entry(Z::Number)
 end
 
 
-struct Nomoto2006SN{N, B, C, F <: Function}
+struct Nomoto2006SN{N, B, C}
     iso_itp::B
     mcut_itp::C
     isotopes::NTuple{N, Symbol}
-    constructor::F
 end
 isotopes(x::Nomoto2006SN) = x.isotopes
 _nt(x::Nomoto2006SN{N}) where N = NamedTuple{isotopes(x), NTuple{N, Float64}}
 function (x::Nomoto2006SN{N})(Z, M) where N
     return _nt(x)(x.iso_itp(Z, M))
 end
-
+function (x::Nomoto2006SN{N})(Z::AbstractArray, M::AbstractArray) where N
+    nt = _nt(x)
+    return [nt(x.iso_itp(Z[i], M[i])) for i in eachindex(Z, M)]
+end
 # function Nomoto2006SN()
 #     entries = Nomoto2006Entry.(_Nomoto2006_Zs)
 #     mat = Array{Float64}(undef, length(entries), length(entries[1].M), length(entries[1].isotopes))
@@ -83,6 +85,5 @@ function Nomoto2006SN(entries, good)
     mcut_itp = interpolate((SVector(_Nomoto2006_Zs), SVector(_Nomoto2006_SN_M)), mcut_mat, Gridded(Linear()))
     mcut_itp = extrapolate(mcut_itp, Throw())
     isotopes = Tuple(Symbol.(entries[1].isotopes))
-    constructor(x) = NamedTuple{isotopes, NTuple{N, Float64}}(x)
-    return Nomoto2006SN(iso_itp, mcut_itp, isotopes, constructor)
+    return Nomoto2006SN(iso_itp, mcut_itp, isotopes)
 end
