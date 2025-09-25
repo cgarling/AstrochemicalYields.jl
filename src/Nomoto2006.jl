@@ -4,7 +4,7 @@
 module Nomoto2006
 
 using ..AstrochemicalYields: AbstractYield, α_elements
-import ..AstrochemicalYields: isotopes, remnant_mass, ejecta_mass, ejecta_metal_mass, ejecta_alpha_mass
+import ..AstrochemicalYields: isotopes, remnant_mass, preSN_mass, ejecta_mass, ejecta_metal_mass, ejecta_alpha_mass
 using Interpolations: interpolate, Linear, Gridded, extrapolate, Flat, Throw
 # using DataInterpolationsND: NDInterpolation, LinearInterpolationDimension, BSplineInterpolationDimension
 using Printf: @sprintf
@@ -77,8 +77,12 @@ _nt(::Nomoto2006SN{I}) where I = NamedTuple{I, NTuple{length(I), Float64}}
 function (x::Nomoto2006SN)(Z, M)
     return _nt(x)(Tuple(x.itp(Z, M)))
 end
+preSN_mass(x::Nomoto2006SN, Z, M) = sum(x(Z, M))
 remnant_mass(x::Nomoto2006SN, Z, M) = x(Z, M).Mcut
-ejecta_mass(x::Nomoto2006SN, Z, M) = M - remnant_mass(x, Z, M)
+function ejecta_mass(x::Nomoto2006SN, Z, M)
+    nt = x(Z, M)
+    return sum(nt) - nt.Mcut
+end
 # Filter to include only metals
 # function filter_metals(nt)
 #     exclude_keys = (:p, :d, Symbol("3He"), Symbol("4He"), :Mcut) # Symbol("6Li"), Symbol("7Li")
