@@ -6,7 +6,6 @@ struct Nomoto2006Entry{A, B <: AbstractArray{A}, C, D}
     Z::A
     M::B
     E::B
-    Mcut::B
     table::C
     isotopes::D
 end
@@ -21,27 +20,27 @@ function Nomoto2006Entry(Z::Number)
     M = parse.(Float64, split(lines[2])[2:end])
     E = parse.(Float64, split(lines[3])[2:end])
     Mcut = parse.(Float64, split(lines[4])[2:end])
-    isotopes = Vector{String}(undef, length(lines)-4)
+    isotopes = Vector{String}(undef, length(lines)-4+1) # +1 for Mcut
     table = Matrix{Float64}(undef, length(isotopes), length(M))
     for (i, line) in enumerate(lines[5:end])
         parts = split(line)
         isotopes[i] = parts[1]
         table[i, :] = parse.(Float64, replace.(parts[2:end], '−' => '-'))
     end
-    # return isotopes, table
-    return Nomoto2006Entry(Z, M, E, Mcut, table, isotopes)
+    table[end, :] .= Mcut
+    isotopes[end] = "Mcut"
+    return Nomoto2006Entry(Z, M, E, table, isotopes)
 end
 
 
-struct Nomoto2006SN{I, B, C}
-    iso_itp::B
-    mcut_itp::C
+struct Nomoto2006SN{I, B}
+    itp::B
     # isotopes::NTuple{N, Symbol} # This is now part of the type signature (I) for performance
 end
 isotopes(::Nomoto2006SN{I}) where I = I
 _nt(::Nomoto2006SN{I}) where I = NamedTuple{I, NTuple{length(I), Float64}}
 function (x::Nomoto2006SN)(Z, M)
-    return _nt(x)(Tuple(x.iso_itp(Z, M)))
+    return _nt(x)(Tuple(x.itp(Z, M)))
 end
 
 function Nomoto2006SN()
@@ -60,10 +59,6 @@ function Nomoto2006SN(entries, good)
     iso_mat = [SVector{N}(i.table[good, j]) for i=entries, j=eachindex(entries[1].M)]
     iso_itp = interpolate((SVector(_Nomoto2006_Zs), SVector(_Nomoto2006_SN_M)), iso_mat, Gridded(Linear()))
     iso_itp = extrapolate(iso_itp, Throw())
-    mcut_mat = [i.Mcut[j] for i=entries, j=eachindex(entries[1].M)]
-    mcut_itp = interpolate((SVector(_Nomoto2006_Zs), SVector(_Nomoto2006_SN_M)), mcut_mat, Gridded(Linear()))
-    mcut_itp = extrapolate(mcut_itp, Throw())
     isotopes = Tuple(Symbol.(entries[1].isotopes[good]))
-    # return Nomoto2006SN(iso_itp, mcut_itp, isotopes)
-    return Nomoto2006SN{isotopes, typeof(iso_itp), typeof(mcut_itp)}(iso_itp, mcut_itp)
+    return Nomoto2006SN{isotopes, typeof(iso_itp)}(iso_itp)
 end
