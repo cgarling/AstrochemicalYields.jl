@@ -45,11 +45,9 @@ struct Nomoto2006SN{N, B, C, F <: Function}
     constructor::F
 end
 isotopes(x::Nomoto2006SN) = x.isotopes
-# function (x::Nomoto2006SN{N})(Z, M) where N
-#     return NamedTuple{x.isotopes, NTuple{N, Float64}}(x.iso_itp(Z, M))
-# end
+_nt(x::Nomoto2006SN{N}) where N = NamedTuple{isotopes(x), NTuple{N, Float64}}
 function (x::Nomoto2006SN{N})(Z, M) where N
-    return x.constructor(x.iso_itp(Z, M))
+    return _nt(x)(x.iso_itp(Z, M))
 end
 
 # function Nomoto2006SN()
@@ -88,16 +86,3 @@ function Nomoto2006SN(entries, good)
     constructor(x) = NamedTuple{isotopes, NTuple{N, Float64}}(x)
     return Nomoto2006SN(iso_itp, mcut_itp, isotopes, constructor)
 end
-# Nomoto2006Entry(0.0, Float64[13, 15, 18, 20, 25, 30, 40], Float64[1, 1, 1, 1, 1, 1, 1],
-#                 Float64[1.57, 1.48, 1.65, 1.66, 1.92, 2.07, 2.89], 
-#                 Float64[6.59E+00, 7.58E+00, 8.43E+00, 8.77E+00, 1.06E+01, 1.17E+01, 1.40E+01],
-#                 Float64[1.49E−16, 1.69E−16, 1.28E−16, 8.66E−17, 2.02E−16, 1.34E−16, 3.46E−16],
-#                 [])
-# function convert_data(fname::AbstractString)
-#     lines = readlines(fname)
-#     Z = parse(Float64, split(lines[1])[end])
-#     M = parse.(Float64, split(lines[2])[2:end])
-#     E = parse.(Float64, split(lines[3])[2:end])
-#     Mcut = parse.(Float64, split(lines[4])[2:end])
-#     isotopes = [split(line)[1] for line in lines[5:end]]
-# end
