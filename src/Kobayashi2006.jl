@@ -45,7 +45,7 @@ function Kobayashi2006Entry(Z::Number)
 end
 
 """
-    Kobayashi2006SN()
+    Kobayashi2006SN() <: AbstractYield
 Load the Kobayashi+2006 core-collapse supernova yield table (this is mostly the same as Nomoto+2006). The yield table can be interpolated by calling it with the metal mass fraction `Z` and stellar mass `M` (in solar masses) of the progenitor.
 
 ```jldoctest
@@ -53,6 +53,7 @@ julia> n = Kobayashi2006SN();
 
 julia> n(0.002, 13.5) isa NamedTuple
 true
+```
 """
 struct Kobayashi2006SN{I, B} <: AbstractYield
     itp::B

@@ -48,8 +48,10 @@ include("Nomoto2006.jl")
 using .Nomoto2006
 include("Kobayashi2006.jl")
 using .Kobayashi2006
+include("Portinari1998.jl")
+using .Portinari1998
 
 export isotopes, preSN_mass, remnant_mass, ejecta_mass, ejecta_metal_mass, ejecta_alpha_mass # Generics
-export Nomoto2006SN, Kobayashi2006SN # specific implementations
+export Nomoto2006SN, Kobayashi2006SN, Portinari1998SN # specific implementations
 
 end

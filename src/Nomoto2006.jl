@@ -51,7 +51,7 @@ function Nomoto2006Entry(Z::Number)
 end
 
 """
-    Nomoto2006SN()
+    Nomoto2006SN() <: AbstractYield
 Load the Nomoto+2006 core-collapse supernova yield table. The yield table can be interpolated by calling it with the metal mass fraction `Z` and stellar mass `M` (in solar masses) of the progenitor.
 
 ```jldoctest
@@ -59,6 +59,7 @@ julia> n = Nomoto2006SN();
 
 julia> n(0.002, 13.5) isa NamedTuple
 true
+```
 """
 struct Nomoto2006SN{I, B} <: AbstractYield
     itp::B

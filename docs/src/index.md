@@ -10,5 +10,5 @@ Documentation for [AstrochemicalYields](https://github.com/cgarling/Astrochemica
 ```
 
 ```@autodocs
-Modules = [AstrochemicalYields]
+Modules = [AstrochemicalYields, AstrochemicalYields.Kobayashi2006, AstrochemicalYields.Nomoto2006, AstrochemicalYields.Portinari1998]
 ```
