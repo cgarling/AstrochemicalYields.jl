@@ -3,7 +3,7 @@
 
 module Nomoto2006
 
-using ..AstrochemicalYields: AbstractYield, α_elements
+using ..AstrochemicalYields: AbstractYield, α_elements, extend_bounds
 import ..AstrochemicalYields: isotopes, remnant_mass, preSN_mass, ejecta_mass, ejecta_metal_mass, ejecta_alpha_mass
 using Interpolations: interpolate, Linear, Gridded, extrapolate, Flat, Throw
 # using DataInterpolationsND: NDInterpolation, LinearInterpolationDimension, BSplineInterpolationDimension
@@ -51,8 +51,8 @@ function Nomoto2006Entry(Z::Number)
 end
 
 """
-    Nomoto2006SN() <: AbstractYield
-Load the Nomoto+2006 core-collapse supernova yield table. The yield table can be interpolated by calling it with the metal mass fraction `Z` and stellar mass `M` (in solar masses) of the progenitor.
+    Nomoto2006SN(; bounds=Throw()) <: AbstractYield
+Load the Nomoto+2006 core-collapse supernova yield table. The yield table can be interpolated by calling it with the metal mass fraction `Z` and stellar mass `M` (in solar masses) of the progenitor. The keyword argument `bounds` should be a valid `Interpolations.jl` extrapolation specifier that will determine how the interpolation is extrapolated (e.g., `Flat()`).
 
 ```jldoctest
 julia> n = Nomoto2006SN();
@@ -64,11 +64,12 @@ true
 struct Nomoto2006SN{I, B} <: AbstractYield
     itp::B
 end
-function Nomoto2006SN()
+function Nomoto2006SN(; bounds=Throw())
     entries = Nomoto2006Entry.(_Nomoto2006_Zs)
     iso_mat = [SVector{length(entries[1].isotopes)}(i.table[:, j]) for i=entries, j=eachindex(entries[1].M)]
     iso_itp = interpolate((SVector(_Nomoto2006_Zs), SVector(_Nomoto2006_SN_M)), iso_mat, Gridded(Linear()))
-    iso_itp = extrapolate(iso_itp, Throw())
+    bounds = extend_bounds(bounds, length(entries[1].isotopes))
+    iso_itp = extrapolate(iso_itp, bounds)
     isotopes = Tuple(Symbol.(entries[1].isotopes))
     return Nomoto2006SN{isotopes, typeof(iso_itp)}(iso_itp)
 end

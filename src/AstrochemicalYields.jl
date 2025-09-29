@@ -1,7 +1,14 @@
 module AstrochemicalYields
 
 using Interpolations: interpolate, scale, Linear, BSpline, Cubic, Gridded, extrapolate, Flat, Throw
-using StaticArrays: SVector
+using StaticArrays: SVector, @SVector
+
+"""
+    extend_bounds(x, N::Integer)
+If `x isa Number`, returns an `SVector{N, typeof(x)}(x)`, else returns `x`. Used for adapting constant interpolations for Interpolations.jl into multi-valued `SVectors`.
+"""
+extend_bounds(x, N::Integer) = x
+extend_bounds(x::Number, N::Integer) = @SVector fill(x, N)
 
 """
 `AbstractYield` is the abstract supertype for all yield tables. Yield table subtypes should be made callable with initial metal mass fraction `Z` and mass `M` (in solar masses), returning the yield for all isotopes in units of solar masses. Subtypes should additionally implement the following methods:

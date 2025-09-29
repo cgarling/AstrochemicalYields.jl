@@ -1,6 +1,6 @@
 module Portinari1998
 
-using ..AstrochemicalYields: AbstractYield, α_elements
+using ..AstrochemicalYields: AbstractYield, α_elements, extend_bounds
 import ..AstrochemicalYields: isotopes, preSN_mass, remnant_mass, ejecta_mass, ejecta_metal_mass, ejecta_alpha_mass
 using Interpolations: interpolate, Linear, Gridded, extrapolate, Flat, Throw
 using Printf: @sprintf
@@ -43,8 +43,8 @@ function Portinari1998Entry(Z::Number)
 end
 
 """
-    Portinari1998SN() <: AbstractYield
-Load the Portinari+1998 core-collapse supernova yield table. The yield table can be interpolated by calling it with the metal mass fraction `Z` and stellar mass `M` (in solar masses) of the progenitor.
+    Portinari1998SN(; bounds=Throw()) <: AbstractYield
+Load the Portinari+1998 core-collapse supernova yield table. The yield table can be interpolated by calling it with the metal mass fraction `Z` and stellar mass `M` (in solar masses) of the progenitor. The keyword argument `bounds` should be a valid `Interpolations.jl` extrapolation specifier that will determine how the interpolation is extrapolated (e.g., `Flat()`).
 
 ```jldoctest
 julia> n = Portinari1998SN();
@@ -56,11 +56,12 @@ true
 struct Portinari1998SN{I, B} <: AbstractYield
     itp::B
 end
-function Portinari1998SN()
+function Portinari1998SN(; bounds=Throw())
     entries = Portinari1998Entry.(_Portinari1998_Zs)
     iso_mat = [SVector{length(entries[1].isotopes)}(i.table[:, j]) for i=entries, j=eachindex(_Portinari1998_SN_M)]
     iso_itp = interpolate((SVector(_Portinari1998_Zs), SVector(_Portinari1998_SN_M)), iso_mat, Gridded(Linear()))
-    iso_itp = extrapolate(iso_itp, Throw())
+    bounds = extend_bounds(bounds, length(entries[1].isotopes))
+    iso_itp = extrapolate(iso_itp, bounds)
     isotopes = Tuple(Symbol.(entries[1].isotopes))
     return Portinari1998SN{isotopes, typeof(iso_itp)}(iso_itp)
 end

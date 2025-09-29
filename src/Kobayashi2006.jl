@@ -3,7 +3,7 @@
 
 module Kobayashi2006
 
-using ..AstrochemicalYields: AbstractYield, α_elements
+using ..AstrochemicalYields: AbstractYield, α_elements, extend_bounds
 import ..AstrochemicalYields: isotopes, preSN_mass, remnant_mass, ejecta_mass, ejecta_metal_mass, ejecta_alpha_mass
 using Interpolations: interpolate, Linear, Gridded, extrapolate, Flat, Throw
 # using DataInterpolationsND: NDInterpolation, LinearInterpolationDimension, BSplineInterpolationDimension
@@ -45,8 +45,8 @@ function Kobayashi2006Entry(Z::Number)
 end
 
 """
-    Kobayashi2006SN() <: AbstractYield
-Load the Kobayashi+2006 core-collapse supernova yield table (this is mostly the same as Nomoto+2006). The yield table can be interpolated by calling it with the metal mass fraction `Z` and stellar mass `M` (in solar masses) of the progenitor.
+    Kobayashi2006SN(; bounds=Throw()) <: AbstractYield
+Load the Kobayashi+2006 core-collapse supernova yield table (this is mostly the same as Nomoto+2006). The yield table can be interpolated by calling it with the metal mass fraction `Z` and stellar mass `M` (in solar masses) of the progenitor. The keyword argument `bounds` should be a valid `Interpolations.jl` extrapolation specifier that will determine how the interpolation is extrapolated (e.g., `Flat()`).
 
 ```jldoctest
 julia> n = Kobayashi2006SN();
@@ -58,11 +58,12 @@ true
 struct Kobayashi2006SN{I, B} <: AbstractYield
     itp::B
 end
-function Kobayashi2006SN()
+function Kobayashi2006SN(; bounds=Throw())
     entries = Kobayashi2006Entry.(_Kobayashi2006_Zs)
     iso_mat = [SVector{length(entries[1].isotopes)}(i.table[:, j]) for i=entries, j=eachindex(_Kobayashi2006_SN_M)]
     iso_itp = interpolate((SVector(_Kobayashi2006_Zs), SVector(_Kobayashi2006_SN_M)), iso_mat, Gridded(Linear()))
-    iso_itp = extrapolate(iso_itp, Throw())
+    bounds = extend_bounds(bounds, length(entries[1].isotopes))
+    iso_itp = extrapolate(iso_itp, bounds)
     isotopes = Tuple(Symbol.(entries[1].isotopes))
     return Kobayashi2006SN{isotopes, typeof(iso_itp)}(iso_itp)
 end
