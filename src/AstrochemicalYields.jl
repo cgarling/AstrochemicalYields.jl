@@ -1,5 +1,8 @@
 module AstrochemicalYields
 
+using Interpolations: interpolate, scale, Linear, BSpline, Cubic, Gridded, extrapolate, Flat, Throw
+using StaticArrays: SVector
+
 """
 `AbstractYield` is the abstract supertype for all yield tables. Yield table subtypes should be made callable with initial metal mass fraction `Z` and mass `M` (in solar masses), returning the yield for all isotopes in units of solar masses. Subtypes should additionally implement the following methods:
  - [`isotopes`](@ref)
@@ -52,6 +55,7 @@ include("Portinari1998.jl")
 using .Portinari1998
 include("Nomoto1997.jl")
 using .Nomoto1997
+include("Vincenzo2016.jl")
 
 export isotopes, preSN_mass, remnant_mass, ejecta_mass, ejecta_metal_mass, ejecta_alpha_mass # Generics
 export Nomoto1997SNIa, Nomoto2006SN, Kobayashi2006SN, Portinari1998SN # specific implementations
