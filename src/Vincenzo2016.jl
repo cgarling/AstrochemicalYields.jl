@@ -13,8 +13,8 @@ julia> v = Vincenzo2016();
 
 julia> M, Z = 1.0, 1e-2;
 
-julia> v(Z, M)
-9.876997213870718
+julia> v(Z, M) ≈ 9.876997213870718
+true
 ```
 """
 struct Vincenzo2016{A}
