@@ -20,7 +20,7 @@ extend_bounds(x::Number, N::Integer) = @SVector fill(x, N)
 """
 abstract type AbstractYield end
 
-"""List of α elements used in ejecta_alpha_mass taken from Nomoto+2006. C is sometimes included, but not here."""
+"""List of α elements used in [`ejecta_alpha_mass`](@ref) taken from Nomoto+2006. C is sometimes included, but not here."""
 const α_elements = ("O", "Ne", "Mg", "Si", "S", "Ar", "Ca", "Ti")
 
 """

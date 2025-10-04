@@ -51,7 +51,7 @@ function Nomoto2006Entry(Z::Number)
 end
 
 """
-    Nomoto2006SN(; bounds=Throw()) <: AbstractYield
+    Nomoto2006SN(; bounds=Interpolations.Throw()) <: AbstractYield
 Load the Nomoto+2006 core-collapse supernova yield table. The yield table can be interpolated by calling it with the metal mass fraction `Z` and stellar mass `M` (in solar masses) of the progenitor. The keyword argument `bounds` should be a valid `Interpolations.jl` extrapolation specifier that will determine how the interpolation is extrapolated (e.g., `Flat()`).
 
 ```jldoctest

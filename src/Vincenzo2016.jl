@@ -3,7 +3,7 @@
 # DOI 10.1093/mnras/stw1145 
 
 """
-    Vincenzo2016(; bounds=Throw())
+    Vincenzo2016(; bounds=Interpolations.Throw())
 Interpolator for the stellar lifetime fits of Vincenzo+2016. These are based on PARSEC stellar models. The lifetimes can be interpolated by calling an instance with a metal mass fraction `Z` and a stellar mass `M` (in solar masses), returning the stellar lifetime in Gyr. The keyword argument `bounds` should be a valid `Interpolations.jl` extrapolation specifier that will determine how the interpolation is extrapolated (e.g., `Flat()`).
 
 ```jldoctest
