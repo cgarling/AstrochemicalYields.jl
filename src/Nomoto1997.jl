@@ -1,5 +1,5 @@
 # Code for Nomoto 1997 SN-Ia yields
-
+"""Module implementing the Nomoto+1997 SN-Ia yield tables."""
 module Nomoto1997
 
 using ..AstrochemicalYields: AbstractYield, α_elements
