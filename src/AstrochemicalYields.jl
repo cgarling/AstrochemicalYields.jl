@@ -57,6 +57,7 @@ Returns the mass of ejected alpha elements (O, Ne, Mg, Si, S, Ar, Ca, and Ti) fo
 """
 function ejecta_alpha_mass(table::AbstractYield, Z, M) end
 
+include("utilities.jl")
 include("Nomoto2006.jl")
 using .Nomoto2006
 include("Kobayashi2006.jl")
@@ -80,6 +81,6 @@ export isotopes, preSN_mass, remnant_mass, ejecta_mass, ejecta_metal_mass, eject
 # Other functions
 export N_TO
 # Model types
-export Nomoto1997SNIa, Nomoto2006SN, Kobayashi2006SN, Portinari1998SN, Vincenzo2016, Karakas2010AGB 
+export Nomoto1997SNIa, Nomoto2006SN, Kobayashi2006SN, Portinari1998SN, Vincenzo2016, Portinari1998Lifetimes, Karakas2010AGB 
 
 end

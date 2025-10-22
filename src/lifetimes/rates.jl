@@ -30,6 +30,10 @@ function N_TO(imf, t1, t2, v::Vincenzo2016, Z, mmin, mmax)
     TO_mass_func(x) = inverse(v)(Z, x / 1e9)
     return N_TO(imf, t1, t2, TO_mass_func, mmin, mmax)
 end
+function N_TO(imf, t1, t2, p::Portinari1998Lifetimes, Z, mmin, mmax)
+    TO_mass_func(x) = inverse(p)(Z, x / 1e9)
+    return N_TO(imf, t1, t2, TO_mass_func, mmin, mmax)
+end
 # function dN_TO(imf, t, v::Vincenzo2016, Z, mmin, mmax)
 #     # TO_mass_func(x) = inverse(v)(Z, x / 1e9)
 #     dm = derivative(inverse, v, Z)

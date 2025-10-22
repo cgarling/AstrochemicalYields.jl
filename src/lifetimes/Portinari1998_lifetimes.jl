@@ -1,9 +1,41 @@
 
+const _Portinari1998Lifetimes_Z = (0.0004, 0.004, 0.008, 0.02, 0.05)
 
 struct Portinari1998Lifetimes{T}
     itp::T
 end
 (v::Portinari1998Lifetimes)(Z, M) = v.itp(M, Z)
+
+function inverse(p::Portinari1998Lifetimes)
+    return (Z, t) -> begin
+        # Zvec = p.itp.itp.knots[2]
+        Zvec = SVector(_Portinari1998Lifetimes_Z)
+        # Cover Z out of bounds case
+        if Z < first(Zvec) || Z > last(Zvec)
+            throw(ArgumentError("`Z` outside valid range for `inverse(::Portinari1998Lifetimes)(Z, M)`; valid range is (0.0004, 0.05)."))
+        end
+        # Cover Z ∈ _Portinari1998Lifetimes_Z case
+        idx = findfirst(Base.Fix1(≈, Z), Zvec)
+        if !isnothing(idx)
+            T = reverse(SVector{30,Float64}(view(p.itp.itp.coefs,:,idx)))
+            M = reverse(p.itp.itp.knots[1])
+            # return extrapolate(interpolate((T,), M, Gridded(Linear())), p.itp.et)(t)
+            # Constructing interpolator allocates, so use faster version
+            # Data is not well-sampled in time, produces interpolation artifacts
+            # in linear interpolation, so we interpolate in log-space
+            return interp_log(T, M, t)
+        end
+        # Cover Z interpolation
+        i = searchsortedfirst(Zvec, Z)
+        T1 = reverse(SVector{30,Float64}(view(p.itp.itp.coefs,:,i-1)))
+        T2 = reverse(SVector{30,Float64}(view(p.itp.itp.coefs,:,i)))
+        dZ = Zvec[i] - Zvec[i-1]
+        T = (T1 * (Zvec[i] - Z) + T2 * (Z - Zvec[i-1])) / dZ
+        M = reverse(p.itp.itp.knots[1])
+        return interp_log(T, M, t)
+        # return extrapolate(interpolate((T,), M, Gridded(Linear())), p.itp.et)(t)
+    end
+end
 
 """
     Portinari1998Lifetimes(; bounds=Throw())
@@ -19,9 +51,8 @@ julia> isapprox(p(0.0004, 100.0), 0.00332)
 true
 """
 function Portinari1998Lifetimes(; bounds=Throw())
-
     # Columns: Initial Mass, lifetime for different metallicities
-    Z = SVector(0.0004, 0.004, 0.008, 0.02, 0.05)
+    Z = SVector(_Portinari1998Lifetimes_Z) # (0.0004, 0.004, 0.008, 0.02, 0.05)
     data = [0.6 4.28E+10 5.35E+10 6.47E+10 7.92E+10 7.18E+10
 0.7 2.37E+10 2.95E+10 3.54E+10 4.45E+10 4.00E+10
 0.8 1.41E+10 1.73E+10 2.09E+10 2.61E+10 2.33E+10
