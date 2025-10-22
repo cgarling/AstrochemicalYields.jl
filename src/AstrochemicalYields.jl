@@ -65,15 +65,21 @@ include("Portinari1998.jl")
 using .Portinari1998
 include("Nomoto1997.jl")
 using .Nomoto1997
-include("Vincenzo2016.jl")
 
-# Load delay time distributions
+# Load submodules
+include(joinpath("lifetimes", "lifetimes.jl"))
+using .Lifetimes
 include(joinpath("delay_time_distributions", "dtds.jl"))
 using .DelayTimeDistributions
 include(joinpath("AGB", "agbs.jl"))
+using .AGB
 
 export inverse # extended methods from other packages
-export isotopes, preSN_mass, remnant_mass, ejecta_mass, ejecta_metal_mass, ejecta_alpha_mass # Generics
-export Nomoto1997SNIa, Nomoto2006SN, Kobayashi2006SN, Portinari1998SN, Vincenzo2016 # specific implementations
+# API generics
+export isotopes, preSN_mass, remnant_mass, ejecta_mass, ejecta_metal_mass, ejecta_alpha_mass 
+# Other functions
+export N_TO
+# Model types
+export Nomoto1997SNIa, Nomoto2006SN, Kobayashi2006SN, Portinari1998SN, Vincenzo2016, Karakas2010AGB 
 
 end

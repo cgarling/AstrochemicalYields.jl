@@ -54,7 +54,7 @@ function derivative(::typeof(inverse), v::Vincenzo2016, Z)
 end
 
 function Vincenzo2016(; bounds=Throw())
-    fname = joinpath(@__DIR__, "data", "supplementary_material_vincenzo2016.dat")
+    fname = joinpath(@__DIR__, "..", "data", "supplementary_material_vincenzo2016.dat")
     lines = readlines(fname)
     table = Matrix{Float64}(undef, length(lines)-1, 4)
     for (i, line) in enumerate(lines[2:end])

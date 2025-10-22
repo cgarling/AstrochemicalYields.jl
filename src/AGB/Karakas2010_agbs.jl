@@ -17,6 +17,7 @@ function Karakas2010AGBEntry(fname)
     Z = parse(Float64, parts[1][2]) # unique([parse(Float64, p[2]) for p in parts])
     M_final = unique([parse(Float64, p[3]) for p in parts])
     isotopes = unique([String(p[4]) for p in parts])
+    prepend!(isotopes, ["Mfinal"])
     # Mass of 6.5 is available only for Z=0.02;
     # we will remove this model for uniform M sampling
     mass_mask = M .≈ 6.5
@@ -27,15 +28,16 @@ function Karakas2010AGBEntry(fname)
     # isotopes = Vector{String}(undef, length(lines))
     # M = Vector{Float64}(undef, length(lines))
     # table = Matrix{Float64}(undef, length(parts[1]) - 4, length(M))
-    table = Array{Float64}(undef, length(parts[1]) - 5, length(isotopes), length(M))
-    # table = fill(Inf, (length(parts[1]) - 5, length(isotopes), length(M)))
-    mask = [6:lastindex(parts[1])...]
+    table = Array{Float64}(undef, length(parts[1]) - 4, length(isotopes), length(M))
+    # table = fill(Inf, (length(parts[1]) - 4, length(isotopes), length(M)))
+    mask = vcat(3, 6:lastindex(parts[1]))
     for (i, p) in enumerate(parts) # enumerate(lines)
         Mi = parse(Float64, p[1])
         if !isapprox(Mi, 6.5)
             i = findfirst(x -> p[4] == x, isotopes)
             j = findfirst(x -> Mi == x, M)
             table[:, i, j] = parse.(Float64, replace.(p[mask], '−' => '-'))
+            table[:, 1, j] .= M_final[j]
         end
     end
     return Karakas2010AGBEntry(Z, M, M_final, table, isotopes)
@@ -48,7 +50,29 @@ Load the Karakas+2010 AGB yield table. The yield table can be interpolated by ca
 ```jldoctest
 julia> k = Karakas2010AGB();
 
-julia> k(0.002, 13.5) isa NamedTuple
+julia> result = k(0.02, 4.5);
+
+julia> result isa NamedTuple
+true
+
+julia> isapprox(result.Mfinal, 0.852)
+true
+
+julia> isapprox(result.g, 3.5865554e-7)
+true
+
+julia> result2 = k(0.01, 4.75);
+
+julia> isapprox(result2.Mfinal, 0.8721666666666666)
+true
+
+julia> isapprox(result2.p, -0.2422697775)
+true
+
+julia> remnant_mass(k, 0.01, 4.75) == k(0.01, 4.75).Mfinal
+true
+
+julia> ejecta_mass(k, 0.01, 4.75) == 4.75 - remnant_mass(k, 0.01, 4.75)
 true
 ```
 """
@@ -64,6 +88,7 @@ function Karakas2010AGB(; bounds=Throw())
     # a6 two models with partial mixing zones that
     # we don't want to use
     entries = Karakas2010AGBEntry.(joinpath(@__DIR__, "..", "data", "Karakas2010", "tablea"*i*".txt") for i in string.(2:5))
+    # return entries
     # The entries[1].table is 3-D with shape (length(properties), length(isotopes), length(masses))
     # The properties are different forms of the yield / wind properties, for now we only care about the total mass lost in the wind, so that's all we'll interpolate
 
@@ -84,8 +109,19 @@ _nt(::Karakas2010AGB{I}) where I = NamedTuple{I, NTuple{length(I), Float64}}
 function (x::Karakas2010AGB)(Z, M)
     return _nt(x)(Tuple(x.itp(Z, M)))
 end
-# remnant_mass(x::Karakas2010AGB, Z, M) = x(Z, M).Mcut
-# function ejecta_mass(x::Nomoto2006SN, Z, M)
-#     nt = x(Z, M)
-#     return sum(nt) - nt.Mcut
+remnant_mass(x::Karakas2010AGB, Z, M) = x(Z, M).Mfinal
+ejecta_mass(x::Karakas2010AGB, Z, M) = M - remnant_mass(x, Z, M)
+
+# Don't care to add these right now
+# function filter_metals(nt::NamedTuple)
+#     names = (:Li6, :Li7, :Be9, :B10, :B11, :C12, :C13, :N14, :N15, :O16, :O17, :O18, :F19, :Ne20, :Ne21, :Ne22, :Na23, :Mg24, :Mg25, :Mg26, :Al26, :Al27, :Si28, :Si29, :Si30, :P31, :S32, :S33, :S34, :S36, :Cl35, :Cl37, :Ar36, :Ar38, :Ar40, :K39, :K40, :K41, :Ca40, :Ca42, :Ca43, :Ca44, :Ca46, :Ca48, :Sc45, :Ti46, :Ti47, :Ti48, :Ti49, :Ti50, :V50, :V51, :Cr50, :Cr52, :Cr53, :Cr54, :Mn55, :Fe54, :Fe56, :Fe57, :Fe58, :Co59, :Ni58, :Ni60, :Ni61, :Ni62, :Ni64, :Cu63, :Cu65, :Zn64, :Zn66, :Zn67, :Zn68, :Zn70, :Ga69, :Ga71)
+#     return nt[names]
 # end
+# ejecta_metal_mass(x::Nomoto2006SN, Z, M) = sum(values(filter_metals(x(Z, M))))
+
+# # Filter to include only alpha elements
+# function filter_alpha(nt::NamedTuple)
+#     names = (:O16, :O17, :O18, :Ne20, :Ne21, :Ne22, :Mg24, :Mg25, :Mg26, :Si28, :Si29, :Si30, :S32, :S33, :S34, :S36, :Ar36, :Ar38, :Ar40, :Ca40, :Ca42, :Ca43, :Ca44, :Ca46, :Ca48, :Ti46, :Ti47, :Ti48, :Ti49, :Ti50)
+#     return nt[names]
+# end
+# ejecta_alpha_mass(x::Nomoto2006SN, Z, M) = sum(values(filter_alpha(x(Z, M))))

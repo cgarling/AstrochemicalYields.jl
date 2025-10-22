@@ -10,4 +10,6 @@ using StaticArrays: SVector
 
 include("Karakas2010_agbs.jl")
 
+export Karakas2010AGB
+
 end # module
