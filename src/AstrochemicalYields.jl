@@ -1,7 +1,9 @@
 module AstrochemicalYields
 
-import Distributions: ContinuousUnivariateDistribution, pdf, mean
+using ArgCheck: @argcheck, @check
 using Interpolations: interpolate, scale, Linear, BSpline, Cubic, Gridded, extrapolate, Flat, Throw
+import InverseFunctions: inverse
+using QuadGK: quadgk
 using StaticArrays: SVector, @SVector
 
 """
@@ -69,7 +71,8 @@ include("Vincenzo2016.jl")
 include(joinpath("delay_time_distributions", "dtds.jl"))
 using .DelayTimeDistributions
 
+export inverse # extended methods from other packages
 export isotopes, preSN_mass, remnant_mass, ejecta_mass, ejecta_metal_mass, ejecta_alpha_mass # Generics
-export Nomoto1997SNIa, Nomoto2006SN, Kobayashi2006SN, Portinari1998SN # specific implementations
+export Nomoto1997SNIa, Nomoto2006SN, Kobayashi2006SN, Portinari1998SN, Vincenzo2016 # specific implementations
 
 end
