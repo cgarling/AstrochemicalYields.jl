@@ -70,6 +70,7 @@ include("Vincenzo2016.jl")
 # Load delay time distributions
 include(joinpath("delay_time_distributions", "dtds.jl"))
 using .DelayTimeDistributions
+include(joinpath("AGB", "agbs.jl"))
 
 export inverse # extended methods from other packages
 export isotopes, preSN_mass, remnant_mass, ejecta_mass, ejecta_metal_mass, ejecta_alpha_mass # Generics

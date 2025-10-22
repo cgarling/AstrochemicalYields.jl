@@ -42,7 +42,7 @@ Returns the expected number of SN-II per solar mass of stars formed in the time 
  - `mmax` is the upper bound on the initial stellar mass for stars that will end their lives as SN-II (often ~100 solar masses).
 
     N_SNII(imf, t1, t2, v::Vincenzo2016, Z, mmin, mmax)
-This signature uses the [`Vincenzo2016`](@ref) stellar lifetimes to derive the `TO_mass_func` for provided metallicity `Z`.
+This signature uses the [`Vincenzo2016`](@ref) stellar lifetimes to derive the `TO_mass_func` for provided metallicity `Z`. For these stellar lifetimes, we recommend a minimum `t1` of 1e7 (10 Myr).
 """
 function N_SNII(imf, t1, t2, TO_mass_func, mmin, mmax)
     @argcheck t2 > t1
@@ -77,7 +77,7 @@ end
 # end
 
 # Load individual DTD implementations
-include("fire-2.jl")
-include("illustris.jl")
+include("fire2_dtd.jl")
+include("illustris_dtd.jl")
 
 end # module
