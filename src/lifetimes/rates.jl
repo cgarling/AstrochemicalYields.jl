@@ -1,6 +1,6 @@
 """
     N_TO(imf, t1, t2, TO_mass_func, mmin, mmax)
-Returns the expected number of stars turning off the main sequence per solar mass of stars formed in the time interval between `t1` and `t2`. Can be used to calculate expected number of SN-II, AGB stars, etc. depending on the setting of `mmin` and `mmax`.
+Returns the expected number of stars turning off the main sequence per solar mass of stars formed in the time interval between `t1` and `t2`. Can be used to calculate expected number of SN-II, AGB stars, etc. depending on the setting of `mmin` and `mmax`. Based on Equation 11 of Vogelsberger+2013.
 
 # Arguments
  - `imf` is an initial mass function supporting Distributions.jl functions `pdf(imf, m)` or `cdf(imf, m)` for initial stellar mass `m`; see InitialMassFunctions.jl for implementations.
@@ -26,12 +26,8 @@ function N_TO(imf, t1, t2, TO_mass_func, mmin, mmax)
         return quadgk(x -> pdf(imf, x), mmin, mmax)[1] / quadgk(x -> x * pdf(imf, x), 0.08, mmax)[1]
     end
 end
-function N_TO(imf, t1, t2, v::Vincenzo2016, Z, mmin, mmax)
+function N_TO(imf, t1, t2, v::Union{Portinari1998Lifetimes, Vincenzo2016}, Z, mmin, mmax)
     TO_mass_func(x) = inverse(v)(Z, x / 1e9)
-    return N_TO(imf, t1, t2, TO_mass_func, mmin, mmax)
-end
-function N_TO(imf, t1, t2, p::Portinari1998Lifetimes, Z, mmin, mmax)
-    TO_mass_func(x) = inverse(p)(Z, x / 1e9)
     return N_TO(imf, t1, t2, TO_mass_func, mmin, mmax)
 end
 # function dN_TO(imf, t, v::Vincenzo2016, Z, mmin, mmax)
