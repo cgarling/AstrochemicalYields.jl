@@ -17,19 +17,21 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 [compat]
 ArgCheck = "2.5.0"
 Distributions = "0.25.122"
+Documenter = "1"
 Interpolations = "0.15, 0.16"
 InverseFunctions = "0.1"
 IrrationalConstants = "0.1, 0.2"
+ParallelTestRunner = "1"
 Printf = "<0.0.1, 1"
 QuadGK = "2"
-SafeTestsets = "0.1"
 SpecialFunctions = "2"
 StaticArrays = "1"
 julia = "1.6"
 
 [extras]
-SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+ParallelTestRunner = "d3525ed8-44d0-4b2c-a655-542cee43accc"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["SafeTestsets", "Test"]
+test = ["Documenter", "ParallelTestRunner", "Test"]
