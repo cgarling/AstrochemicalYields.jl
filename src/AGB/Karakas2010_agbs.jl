@@ -81,7 +81,6 @@ struct Karakas2010AGB{I, B} <: AbstractYield
 end
 
 function Karakas2010AGB(; bounds=Throw())
-
     # Read tablea1
     
     # Read tables a2-a5
