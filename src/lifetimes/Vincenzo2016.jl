@@ -25,6 +25,26 @@ julia> using AstrochemicalYields: inverse
 julia> inverse(v)(Z, 9.876997213870718) ≈ M
 true
 ```
+
+Derivatives are also available. `AstrochemicalYields.Lifetimes.derivative(v::Vincenzo2016, Z)` returns a function that takes an argument `M` (the initial stellar mass (in solar masses) and returns the derivative of the stellar lifetime (in Gyr) with respect to the initial stellar mass evaluated at `M`.
+
+```jldoctest vincenzo
+julia> using AstrochemicalYields.Lifetimes: derivative
+
+julia> d = derivative(v, Z);
+
+julia> isapprox(d(M), -35.05809527556551)
+true
+```
+
+The derivative of the inverse option (the derivative of the stellar mass of stars ending their lives with respect to time) is also available.
+
+```jldoctest vincenzo
+julia> dinv = derivative(inverse, v, Z); # dinv is a function taking a time (in Gyr) argument
+
+julia> isapprox(dinv(9.0), -0.0325150150483193)
+true
+```
 """
 struct Vincenzo2016{A}
     itp::A

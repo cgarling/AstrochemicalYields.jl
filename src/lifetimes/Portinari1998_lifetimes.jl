@@ -41,14 +41,25 @@ end
     Portinari1998Lifetimes(; bounds=Throw())
 Interpolator for the stellar lifetime fits of Portinari+1998 (Table 14). The lifetimes can be interpolated by calling an instance with a metal mass fraction `Z` and a stellar mass `M` (in solar masses), returning the stellar lifetime in Gyr. The keyword argument `bounds` should be a valid `Interpolations.jl` extrapolation specifier that will determine how the interpolation is extrapolated (e.g., `Flat()`).
 
-
-```jldoctest
+```jldoctest portinari1998lifetimes
 julia> using AstrochemicalYields.Lifetimes: Portinari1998Lifetimes
 
 julia> p = Portinari1998Lifetimes();
 
 julia> isapprox(p(0.0004, 100.0), 0.00332)
 true
+```
+
+`inverse(p)` returns a function that takes arguments `(Z, t)` with `t` being a time in Gyr and returns the mass (in solar masses) of stars evolving off the MS.
+
+```jldoctest portinari1998lifetimes
+julia> using AstrochemicalYields.Lifetimes: inverse
+
+julia> invp = inverse(p);
+
+julia> isapprox(invp(0.0004, 0.00332), 100.0)
+true
+```
 """
 function Portinari1998Lifetimes(; bounds=Throw())
     # Columns: Initial Mass, lifetime for different metallicities
