@@ -27,6 +27,21 @@ abstract type AbstractYield end
 const α_elements = ("O", "Ne", "Mg", "Si", "S", "Ar", "Ca", "Ti")
 
 """
+    α_isotopes(x::AbstractYield)
+Convenience function that returns the isotope symbols for the given `x::AbstractYield` for the α-elements $(join(α_elements, ", ")).
+```jldoctest
+julia> AstrochemicalYields.α_isotopes(Nomoto2006SN())
+(:O16, :O17, :O18, :Ne20, :Ne21, :Ne22, :Mg24, :Mg25, :Mg26, :Si28, :Si29, :Si30, :S32, :S33, :S34, :S36, :Ar36, :Ar38, :Ar40, :Ca40, :Ca42, :Ca43, :Ca44, :Ca46, :Ca48, :Ti46, :Ti47, :Ti48, :Ti49, :Ti50)
+```
+"""
+function α_isotopes(x::AbstractYield)
+    isos = isotopes(x)
+    names = Tuple(Iterators.flatten((filter(x -> begin y = String(x); startswith(y, i) && !startswith(y, "Sc") end, isos) for i in α_elements)))
+    names = Tuple(unique(names))
+    return names
+end
+
+"""
     isotopes(table::AbstractYield)
 Returns a `NTuple{N, Symbol}` giving identifiers for the isotopes available in the yield table.
 """
