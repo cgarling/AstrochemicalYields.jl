@@ -4,18 +4,34 @@ authors = ["cgarling <chris.t.garling@gmail.com> and contributors"]
 version = "0.1.0"
 
 [deps]
+ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
+InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
+IrrationalConstants = "92d709cd-6900-40b7-9082-c6be49f344b6"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
+SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
+ArgCheck = "2"
+Distributions = "0.25"
+Documenter = "1"
 Interpolations = "0.15, 0.16"
+InverseFunctions = "0.1"
+IrrationalConstants = "0.1, 0.2"
+ParallelTestRunner = "2"
 Printf = "<0.0.1, 1"
+QuadGK = "2"
+SpecialFunctions = "2"
 StaticArrays = "1"
-julia = "1.6"
+julia = "1.10"
 
 [extras]
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+ParallelTestRunner = "d3525ed8-44d0-4b2c-a655-542cee43accc"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["Documenter", "ParallelTestRunner", "Test"]

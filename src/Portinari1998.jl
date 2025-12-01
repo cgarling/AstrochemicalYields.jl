@@ -1,3 +1,4 @@
+"""Module implementing the Portinari+1998 core-collapse supernova yield tables."""
 module Portinari1998
 
 using ..AstrochemicalYields: AbstractYield, α_elements, extend_bounds

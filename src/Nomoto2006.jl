@@ -1,6 +1,6 @@
 # Code for Nomoto2006 SN-II yields
 # The mass cut is the mass coordinate (usually in solar masses) that separates the ejecta from the remnant
-
+"""Module implementing the Nomoto+2006 core-collapse supernova yield tables."""
 module Nomoto2006
 
 using ..AstrochemicalYields: AbstractYield, α_elements, extend_bounds

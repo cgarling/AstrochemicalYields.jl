@@ -1,6 +1,6 @@
 # Code for Kobayashi2006 SN-II yields
 # The mass cut is the mass coordinate (usually in solar masses) that separates the ejecta from the remnant
-
+"""Module implementing the Kobayashi+2006 core-collapse supernova yield tables."""
 module Kobayashi2006
 
 using ..AstrochemicalYields: AbstractYield, α_elements, extend_bounds

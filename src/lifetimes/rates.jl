@@ -1,0 +1,46 @@
+"""
+    N_TO(imf, t1, t2, TO_mass_func, mmin, mmax)
+Returns the expected number of stars turning off the main sequence per solar mass of stars formed in the time interval between `t1` and `t2`. Can be used to calculate expected number of SN-II, AGB stars, etc. depending on the setting of `mmin` and `mmax`. Based on Equation 11 of Vogelsberger+2013.
+
+# Arguments
+ - `imf` is an initial mass function supporting Distributions.jl functions `pdf(imf, m)` or `cdf(imf, m)` for initial stellar mass `m`; see InitialMassFunctions.jl for implementations.
+ - `t1` is the starting time of the interval in years.
+ - `t2` is the ending time of the inverval in years.
+ - `TO_mass_func` is a function that takes a time in years (like `t1`, `t2`) and returns the mass (in solar masses) of stars leaving the main sequence.
+ - `mmin` is the lower bound on the initial stellar mass for stars that will end their lives as SN-II (typically ~8 solar masses).
+ - `mmax` is the upper bound on the initial stellar mass for stars that will end their lives as SN-II (often ~100 solar masses).
+
+    N_TO(imf, t1, t2, v::Vincenzo2016, Z, mmin, mmax)
+This signature uses the [`Vincenzo2016`](@ref) stellar lifetimes to derive the `TO_mass_func` for provided metallicity `Z`. For these stellar lifetimes, we recommend a minimum `t1` of 1e7 (10 Myr).
+"""
+function N_TO(imf, t1, t2, TO_mass_func, mmin, mmax)
+    @argcheck t2 > t1
+    mmin = max(mmin, TO_mass_func(t2))
+    mmax = min(mmax, TO_mass_func(t1))
+    if mmin > mmax
+        return 0.0 * t1
+    end
+    try
+        return (cdf(imf, mmax) - cdf(imf, mmin)) / mean(imf)
+    catch
+        return quadgk(x -> pdf(imf, x), mmin, mmax)[1] / quadgk(x -> x * pdf(imf, x), 0.08, mmax)[1]
+    end
+end
+function N_TO(imf, t1, t2, v::Union{Portinari1998Lifetimes, Vincenzo2016}, Z, mmin, mmax)
+    TO_mass_func(x) = inverse(v)(Z, x / 1e9)
+    return N_TO(imf, t1, t2, TO_mass_func, mmin, mmax)
+end
+# function dN_TO(imf, t, v::Vincenzo2016, Z, mmin, mmax)
+#     # TO_mass_func(x) = inverse(v)(Z, x / 1e9)
+#     dm = derivative(inverse, v, Z)
+#     TO_mass = inverse(v)(Z, TO_mass_func(t / 1e9))
+#     r = 0.0
+#     p = pdf(imf, TO_mass)
+#     if TO_mass < mmax
+#         r += p * dm(TO_mass)
+#     end
+#     if TO_mass > mmin
+#         r += 0
+#     end
+#     return r
+# end
